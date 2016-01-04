@@ -14,6 +14,8 @@ import org.springframework.validation.MapBindingResult
 
 import groovy.transform.Field
 
+import java.util.concurrent.ConcurrentMap
+
 import static grails.async.Promises.task
 
 import static org.springframework.http.HttpStatus.*
@@ -222,7 +224,8 @@ class UsersController {
 
     @Transactional
     def save2() {
-        log.info("params recus = " + params)
+        log.info("######### date start " + new Date())
+        // log.info("params recus = " + params)
         GenericDomain userInstance = new GenericDomain() // il s'agit de l'instance à save
         // todo ne pas avoir à aller dans le reseau pour recup les metadatas constemment
         String url = "http://localhost:8085/testRemote/users/metadata"
@@ -238,17 +241,19 @@ class UsersController {
             }
         }
 
-        userDomainMetadatas.constraints.each {
-            log.info("contrainte = " + it.key + "; value = " + it.value)
-        }
+        /*  userDomainMetadatas.constraints.each {
+              // log.info("contrainte = " + it.key + "; value = " + it.value)
+          }    */
 
         userInstance.validateproperties(userDomainMetadatas, params)
+        //userInstance.validateproperties_2(userDomainMetadatas, params)
 
 //Test
         log.info("userInstance errors total = " + userInstance.errors.errorCount)
         userInstance.errors.each {
-            log.info("error = " + it)
+            // log.info("error = " + it)
         }
+        log.info("######### date end " + new Date())
     }
 
 
