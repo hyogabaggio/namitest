@@ -33,8 +33,10 @@ class UsersController {
 
     def index(Integer max) {
         params.max = Math.min(max ?: 10, 100)
+        String realController = request.getAttribute("redir")
+        //  log.info("realController = " + realController)
 
-        String url = "http://localhost:8085/testRemote/users/"
+        String url = "http://localhost:8085/testRemote/" + realController + "/"
         rest.restTemplate.messageConverters.removeAll
                 { it.class.name == 'org.springframework.http.converter.json.GsonHttpMessageConverter' }
 
@@ -51,14 +53,12 @@ class UsersController {
                     user."${key}" = it.get(key)
                 }
             }
-            log.info("user = " + user)
-            log.info("user dateCreated = " + user.dateCreated.class)
-            log.info("user home = " + user.home.class)
             usersList.add(user)
         }
 
 
         log.info("usersList = " + usersList.size())
+        log.info("usersList keys = " + usersList[0]?.dynamicProperties?.keySet())
 
         // ******** remote call
 
@@ -68,7 +68,7 @@ class UsersController {
 
         // respond Users.list(params), model: [usersInstanceCount: Users.count()]
         // TODO à check: dans le respond usersList n'est pas considéré dans la vue, on est obligé d'envoyer usersInstanceList dans le model. UserList est pourtant considéré quand on fait un scaffold
-        respond usersList, model: [usersInstanceCount: usersList.size(), usersInstanceList: usersList]
+        respond usersList, model: [usersInstanceCount: usersList.size(), domainInstanceList: usersList]
     }
 
     def testTask() {

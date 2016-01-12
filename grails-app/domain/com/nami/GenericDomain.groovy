@@ -77,6 +77,7 @@ class GenericDomain extends GenericDomainExtends {
      * @return
      */
     //version avec eachParallel, en test. Voir validateproperties_2 pour la version avec each
+    // à voir si c utile,
     def validateproperties(GenericDomainExtends domainMetadatas, Map params) {
         // on active le stockage des erreurs dans le model
         this.setErrors(new MapBindingResult(this.dynamicProperties, GenericDomain.class.getName()))

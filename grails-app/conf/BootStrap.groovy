@@ -4,6 +4,8 @@ import com.nami.Utilities
 
 class BootStrap {
 
+    def grailsUrlMappingsHolder
+
     def init = { servletContext ->
 
         /*  def hyoga = new Users(
@@ -33,6 +35,15 @@ class BootStrap {
                      new DateTime(delegate) :
                      oldAsType.invoke(delegate, [type] as Class[])
          }*/
+
+        /* def extraMappings = {
+             "/$controller/$action?/$id?(.$format)?"(controller: "users") {
+                 // def controllerName = (request.requestURI - request.contextPath).split('/')[2]
+                 test = "popopppm"
+                 redir = "${controller}"
+             }
+         }
+         grailsUrlMappingsHolder.addMappings extraMappings */
 
     }
     def destroy = {
