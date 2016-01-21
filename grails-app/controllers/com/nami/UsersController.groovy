@@ -10,6 +10,8 @@ import org.codehaus.groovy.grails.validation.ConstrainedProperty
 import org.codehaus.groovy.grails.web.json.JSONElement
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.grails.databinding.BindUsing
+import org.springframework.util.LinkedMultiValueMap
+import org.springframework.util.MultiValueMap
 import org.springframework.validation.MapBindingResult
 
 import groovy.transform.Field
@@ -34,7 +36,7 @@ class UsersController {
     def index(Integer max) {
         params.max = Math.min(max ?: 10, 100)
         String realController = request.getAttribute("redir")
-         log.info("realController = " + realController)
+        log.info("realController = " + realController)
 
         String url = "http://localhost:8085/testRemote/" + realController + "/"
         rest.restTemplate.messageConverters.removeAll
@@ -42,11 +44,10 @@ class UsersController {
 
         def users = rest.get(url)
         List<GenericDomain> usersList = []
-        // log.info("users.json = " + users.json.class)
 
         users.json.each {
             GenericDomain user = new GenericDomain()
-            log.info("it = " + it)
+            // log.info("it = " + it)
 
             it.keys().each { key ->
                 if (key != "class") {
@@ -115,9 +116,9 @@ class UsersController {
 
         GenericDomain user = new GenericDomain()
 
-        userMetadata.json.domain.keys().each {
+        userMetadata?.json?.domain?.keys().each {
             if (it != "class" && it != "constraints") {
-                user."${it}" = userMetadata.json.domain.get(it)
+                user."${it}" = userMetadata?.json?.domain?.get(it)
             }
         }
 
@@ -237,9 +238,9 @@ class UsersController {
         GenericDomainExtends userDomainMetadatas = new GenericDomainExtends()
         //il s'agit de l'instance representant les metadatas de la classe
 
-        userMetadata.json.domain.keys().each {
+        userMetadata?.json?.domain?.keys().each {
             if (it != "class") {
-                userDomainMetadatas."${it}" = userMetadata.json.domain.get(it)
+                userDomainMetadatas."${it}" = userMetadata?.json?.domain?.get(it)
             }
         }
 
@@ -250,19 +251,29 @@ class UsersController {
         userInstance.validateproperties(userDomainMetadatas, params)
         //userInstance.validateproperties_2(userDomainMetadatas, params)
 
-//Test
-        log.info("userInstance errors total = " + userInstance.errors.errorCount)
-        userInstance.errors.each {
-            // log.info("error = " + it)
-        }
         log.info("######### date end " + new Date())
         if (userInstance.hasErrors()) {
-            respond userInstance.errors, view: 'create'  , model: [userMetadata: userMetadata, domain: realController]
-
-         /*   render(view: "create", model: [etudiantInstance: etudiantInstance, parametresDiversInstance: parametresDiversInstance, afficheCiviliteInstance: afficheCiviliteInstance, afficheOptionBacInstance: afficheOptionBacInstance, listAttributEtudiants: listAttributEtudiants, params: params]) */
+            //respond userInstance.errors, view: 'create'  , model: [userMetadata: userMetadata, domain: realController]
+            render(view: 'create', model: [userInstance: userInstance, userMetadata: userMetadata, domain: realController])
 
             return
         }
+        String urlsave = "http://localhost:8085/testRemote/" + realController + "/"
+        //TODO le save distant pourrait reoturner l'instance ?
+        MultiValueMap<String, String> form = new LinkedMultiValueMap<String, String>()
+        userInstance.dynamicProperties.each {
+            form.add(it.key, it.value)
+        }
+
+        def resp = rest.post(urlsave) {
+            //auth(clientId, clientSecret)
+            accept("application/json")
+            contentType("application/x-www-form-urlencoded")
+            body(form)
+        }
+        def json = resp.json
+        log.info("json = " + json)
+
     }
 
 

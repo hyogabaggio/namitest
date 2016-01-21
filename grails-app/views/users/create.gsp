@@ -23,9 +23,9 @@
     <g:if test="${flash.message}">
         <div class="message" role="status">${flash.message}</div>
     </g:if>
-    <g:hasErrors bean="${usersInstance}">
+    <g:hasErrors bean="${userInstance}">
         <ul class="errors" role="alert">
-            <g:eachError bean="${usersInstance}" var="error">
+            <g:eachError bean="${userInstance}" var="error">
                 <li <g:if test="${error in org.springframework.validation.FieldError}">data-field-id="${error.field}"</g:if>><g:message
                         error="${error}"/></li>
             </g:eachError>
@@ -35,26 +35,26 @@
     <g:form url="[action: 'save2', controller: domain]">
         <fieldset class="form">
 
-            <g:each in="${userMetadata.json.domain}" var="user">
+            <g:each in="${userMetadata?.json?.domain}" var="user">
 
                 <%
                     def requiredClassStyle = ""
                     def requiredIndicatorClass = ""
-                    if (!user.value.optional) {
+                    if (!user?.value?.optional) {
                         requiredClassStyle = "required"
                         requiredIndicatorClass = "required-indicator"
                     }
                 %>
-                <div class="fieldcontain ${requiredClassStyle}">
-                    <label for="${user.key}">
-                        <g:message code="users.${user.key}.label" default="${user.key}"/>
+                <div class="fieldcontain ${requiredClassStyle} ${hasErrors(bean: userInstance, field: user?.key, 'errors')} ">
+                    <label for="${user?.key}">
+                        <g:message code="users.${user?.key}.label" default="${user?.key}"/>
                         <span class="${requiredIndicatorClass}">*</span>
                     </label>
-                    <g:if test="${!user.value.optional}">
-                        <g:textField name="${user.key}" required="" value=""/>
+                    <g:if test="${!user?.value.optional}">
+                        <g:textField name="${user?.key}" required="" value="${userInstance?."${user?.key}"}"/>
                     </g:if>
                     <g:else>
-                        <g:textField name="${user.key}" value=""/>
+                        <g:textField name="${user?.key}" value="${userInstance?."${user?.key}"}"/>
                     </g:else>
 
                 </div>
