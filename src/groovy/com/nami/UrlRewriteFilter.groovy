@@ -23,20 +23,31 @@ class UrlRewriteFilter implements Filter {
 
     /**
      * redirect tous les controllers vers users, mais garde l'action originale.
-     * exemple: 'http://localhost:8080/nami_gr_2_5/car/index?redir=aaaaaaaaaa&batch=pomme' affiche la page 'http://localhost:8080/nami_gr_2_5/users/index?redir=aaaaaaaaaa&batch=pomme'
+     * exemple: 'http://localhost:8080/nami_gr_2_5/car/index?redir=aaaaaaaaaa&batch=pomme' affiche la page
+     * 'http://localhost:8080/nami_gr_2_5/users/index?redir=XXXXX&batch=pomme'
      */
     void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        // chain.doFilter(request, response)
         HttpServletRequest httprequest = (HttpServletRequest) request;
-        String requestURI = httprequest.getRequestURI();
-        if (!requestURI.contains("assets") && requestURI?.split('/')?.size() > 2) {
-            //  System.out.println("requestURI = " + requestURI)
+        // on recupere l'uri. Ex: requestURI = /nami/users/create
+        String requestURI = httprequest.getRequestURI()
+        /*  if (!requestURI.contains("assets") && requestURI?.split('/')?.size() > 2) {
+              System.out.println("requestURL = " + httprequest.getRequestURL())
+              System.out.println("requestURI = " + httprequest.getRequestURI())
+          }                              */
+        String oldController = "users"
+        if (!requestURI.contains("assets") && requestURI?.split('/')?.size() > 2/* && requestURI?.split('/')[2] != "users"*/) {
+            // on recupere le controller saisi dans l'url
+            oldController = requestURI?.split('/')[2]
+           // System.out.println("oldController = " + oldController)
+            //System.out.println("size = " + requestURI?.split('/')?.size())
+            String action = requestURI?.split('/').size() > 3 ? requestURI?.split('/')[3] : "index"
 
-            String redirParam = requestURI?.split('/')[2]
-            // System.out.println("redirParam = " + redirParam)
-            request.setAttribute("redir", redirParam);
-            String newURI = "/users"
-            // RequestDispatcher requestDispatcher = request.getRequestDispatcher(newURI)
+            // on le place en attribut dans le request, afin de le recuperer et le manipuler dans le controller generique de destination
+            request.setAttribute("redir", oldController)
+
+            // on remplace le controller saisi dans l'url par le controller générique de destination, et on enleve le nom de l'application
+            String newURI = "/users/" + action
+            // System.out.println("newURI = " + newURI)
             RequestDispatcher requestDispatcher = request.getServletContext().getRequestDispatcher(newURI)
             requestDispatcher.forward(request, response)
 

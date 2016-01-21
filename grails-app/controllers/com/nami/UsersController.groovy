@@ -34,7 +34,7 @@ class UsersController {
     def index(Integer max) {
         params.max = Math.min(max ?: 10, 100)
         String realController = request.getAttribute("redir")
-        //  log.info("realController = " + realController)
+         log.info("realController = " + realController)
 
         String url = "http://localhost:8085/testRemote/" + realController + "/"
         rest.restTemplate.messageConverters.removeAll
@@ -68,7 +68,7 @@ class UsersController {
 
         // respond Users.list(params), model: [usersInstanceCount: Users.count()]
         // TODO à check: dans le respond usersList n'est pas considéré dans la vue, on est obligé d'envoyer usersInstanceList dans le model. UserList est pourtant considéré quand on fait un scaffold
-        respond usersList, model: [usersInstanceCount: usersList.size(), domainInstanceList: usersList]
+        respond usersList, model: [usersInstanceCount: usersList.size(), domainInstanceList: usersList, domain: realController]
     }
 
     def testTask() {
@@ -105,7 +105,9 @@ class UsersController {
     }
 
     def create() {
-        String url = "http://localhost:8085/testRemote/users/metadata"
+        String realController = request.getAttribute("redir")
+        log.info("redir = " + realController)
+        String url = "http://localhost:8085/testRemote/" + realController + "/metadata"
         rest.restTemplate.messageConverters.removeAll
                 { it.class.name == 'org.springframework.http.converter.json.GsonHttpMessageConverter' }
         def userMetadata = rest.get(url)
@@ -119,12 +121,9 @@ class UsersController {
             }
         }
 
-        log.info("user home = " + user.home)
-        log.info("user home = " + user.home.class)
-
         // log.info("user constraints= " + userMetadata.json.domain.constraints)
 
-        respond new Users(params), model: [userMetadata: userMetadata]
+        respond new Users(params), model: [userMetadata: userMetadata, domain: realController]
     }
 
 
@@ -163,6 +162,7 @@ class UsersController {
     @Transactional
     def save1() {
         log.info("params recus = " + params)
+
         GenericDomain userInstance = new GenericDomain() // il s'agit de l'instance à save
 
         String url = "http://localhost:8085/testRemote/users/metadata"
@@ -225,10 +225,12 @@ class UsersController {
     @Transactional
     def save2() {
         log.info("######### date start " + new Date())
-        // log.info("params recus = " + params)
+        String realController = request.getAttribute("redir")
+
+        log.info("params recus = " + realController)
         GenericDomain userInstance = new GenericDomain() // il s'agit de l'instance à save
         // todo ne pas avoir à aller dans le reseau pour recup les metadatas constemment
-        String url = "http://localhost:8085/testRemote/users/metadata"
+        String url = "http://localhost:8085/testRemote/" + realController + "/metadata"
         rest.restTemplate.messageConverters.removeAll
                 { it.class.name == 'org.springframework.http.converter.json.GsonHttpMessageConverter' }
         def userMetadata = rest.get(url)
@@ -254,6 +256,13 @@ class UsersController {
             // log.info("error = " + it)
         }
         log.info("######### date end " + new Date())
+        if (userInstance.hasErrors()) {
+            respond userInstance.errors, view: 'create'  , model: [userMetadata: userMetadata, domain: realController]
+
+         /*   render(view: "create", model: [etudiantInstance: etudiantInstance, parametresDiversInstance: parametresDiversInstance, afficheCiviliteInstance: afficheCiviliteInstance, afficheOptionBacInstance: afficheOptionBacInstance, listAttributEtudiants: listAttributEtudiants, params: params]) */
+
+            return
+        }
     }
 
 
